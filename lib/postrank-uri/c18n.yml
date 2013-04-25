@@ -19,6 +19,8 @@
   - src
   diepresse.com:
   - _vl_backlink
+  huffingtonpost.com:
+  - utm_hp_ref
   washingtonpost.com:
   - nav
   - wprss
