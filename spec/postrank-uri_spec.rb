@@ -29,15 +29,19 @@ describe PostRank::URI do
       # See http://tools.ietf.org/html/rfc3986#section-2.3
 
       it "should unescape PostRank::URI with spaces encoded as '+'" do
-        PostRank::URI.unescape('id=+1').should == 'id= 1'
+        PostRank::URI.unescape('?id=+1').should == '?id= 1'
       end
 
       it "should unescape PostRank::URI with spaces encoded as '+'" do
-        PostRank::URI.unescape('id%3D+1').should == 'id= 1'
+        PostRank::URI.unescape('?id%3D+1').should == '?id= 1'
       end
 
       it "should unescape PostRank::URI with spaces encoded as %20" do
-        PostRank::URI.unescape('id=%201').should == 'id= 1'
+        PostRank::URI.unescape('?id=%201').should == '?id= 1'
+      end
+
+      it "should not unescape '+' to spaces in paths" do
+        PostRank::URI.unescape('/foo+bar?id=foo+bar').should == '/foo+bar?id=foo bar'
       end
     end
 
@@ -121,6 +125,12 @@ describe PostRank::URI do
       it "should remove awesm/sms parameters" do
         c('igvita.com/?id=a&utm_source=a&awesm=b').should == 'http://igvita.com/?id=a'
         c('igvita.com/?id=a&sms_ss=a').should == 'http://igvita.com/?id=a'
+      end
+
+      it "should remove PHPSESSID parameter" do
+        c('http://www.nachi.org/forum?PHPSESSID=9ee2fb10b7274ef2b15d1d4006b8c8dd').should == 'http://www.nachi.org/forum?'
+        c('http://www.nachi.org/forum/?PHPSESSID=9ee2fb10b7274ef2b15d1d4006b8c8dd').should == 'http://www.nachi.org/forum/?'
+        c('http://www.nachi.org/forum?id=123&PHPSESSID=9ee2fb10b7274ef2b15d1d4006b8c8dd').should == 'http://www.nachi.org/forum?id=123'
       end
     end
 
@@ -349,6 +359,14 @@ describe PostRank::URI do
 
     it 'marks www.test.com as valid' do
       PostRank::URI.valid?('http://www.test.com').should be_true
+    end
+
+    it 'marks Unicode domain as valid (NOTE: works only with a scheme)' do
+      PostRank::URI.valid?('http://президент.рф').should be_true
+    end
+
+    it 'marks punycode domain domain as valid' do
+      PostRank::URI.valid?('xn--d1abbgf6aiiy.xn--p1ai').should be_true
     end
   end
 end

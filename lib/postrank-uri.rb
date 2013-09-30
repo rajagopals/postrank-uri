@@ -130,7 +130,9 @@ module PostRank
     end
 
     def unescape(uri)
-      uri.tr('+', ' ').gsub(URIREGEX[:unescape]) do
+      u = parse(uri)
+      u.query = u.query.tr('+', ' ') if u.query
+      u.to_s.gsub(URIREGEX[:unescape]) do
         [$1.delete('%')].pack('H*')
       end
     end
@@ -224,7 +226,7 @@ module PostRank
       cleaned_uri = clean(uri, :raw => true)
 
       if host = cleaned_uri.host
-        is_valid = PublicSuffix.valid?(host)
+        is_valid = PublicSuffix.valid?(Addressable::IDNA.to_unicode(host))
       end
 
       is_valid
